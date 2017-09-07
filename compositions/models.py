@@ -17,5 +17,6 @@ class UserProfile(models.Model):
 class Composition(models.Model):
     graded = models.BooleanField(default=False)
     grade = models.PositiveSmallIntegerField(default=0)
-    order = models.CharField(max_length=200)
+    order = models.CharField(max_length=200, default='')
+    comment = models.CharField(max_length=200, default='No comment yet', null = True)
     user = models.ForeignKey(User)

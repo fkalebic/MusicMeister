@@ -3,18 +3,57 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, render_to_response
+from compositions.models import UserProfile, Composition
+from django.contrib.auth.models import User
+from compositions.forms import AddCompositionForm
 
-import os
 from django.template import RequestContext
 
 
 @login_required
 def welcome(request):
-    return HttpResponse("Hello, world. You're at the student index.")
+    #return HttpResponse("Hello, world. You're at the student index.")
+    context = RequestContext(request)
+    current_user_id = request.user.id
+    all_compositions = Composition.objects.filter(user_id=current_user_id)
+    return render_to_response('compositions/welcome.html', {'all_compositions': all_compositions}, context)
 
 @login_required
 def grade(request):
-    return HttpResponse("Hello, world. You're at the professor index.")
+    context = RequestContext(request)
+    current_user_profile = UserProfile.objects.get(user_id=request.user)
+    if current_user_profile.professor:
+        all_compositions = Composition.objects.filter(grade=0)
+        return render_to_response('compositions/grade.html', {'all_compositions': all_compositions}, context)
+    else:
+        return HttpResponse("Nein! Verboten! Only professors can access this page!")
+
+@login_required
+def add_new_comp(request):
+#    context = RequestContext(request)
+#    current_user_id = request.user.id
+#    all_compositions = Composition.objects.filter(user_id=current_user_id)
+#    return render_to_response('compositions/welcome.html', {'all_compositions': all_compositions}, context)
+    context = RequestContext(request)
+    if request.method == 'POST':
+        form = AddCompositionForm(request.POST, request.FILES)
+        if form.is_valid():
+            ret = save_comp(request)
+
+    else:
+        form = AddCompositionForm(
+            initial={'order': ''}
+        )
+    return render_to_response('compositions/add_new_comp.html', {'form': form}, context)
+
+@login_required
+def save_comp(request):
+    order = request.POST['order']
+    current_user = request.user
+    new_comp = Composition(user=current_user, order=order)
+    new_comp.save()
+    return order
+
 
 def user_login(request):
     # Like before, obtain the context for the user's request.
@@ -44,7 +83,7 @@ def user_login(request):
                 if user.is_superuser:
                     return HttpResponseRedirect('/compositions/grade/')
                 else:
-                    return HttpResponseRedirect('/compositions/welcome')
+                    return HttpResponseRedirect('/compositions/welcome/')
             else:
                 # An inactive account was used - no logging in!
                 return HttpResponse("Your account is disabled.")

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+</head>
+<body>
+    Hello, You're at the grade page. These are all ungraded compositions:<br>
+    {% if user.is_authenticated %}
+
+        <table id="all-composition-table">
+
+            <tbody id="composition-table">
+            {% for composition in all_compositions %}
+
+            	<tr>
+            		<td>Composition</td>
+            		<td>Grade</td>
+            		<td>Teachers comment</td>
+            	</tr>
+                <tr>
+                    <td>{{ composition.order }}</td>
+                    <td>{{ composition.grade }}</td>
+                    <td>{{ composition.comment }}</td>
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    <a href="/compositions/logout/">Logout</a><br />
+
+	{% endif %}
+
+</body>
+</html>
