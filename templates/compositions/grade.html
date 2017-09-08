@@ -11,23 +11,44 @@
         <table id="all-composition-table">
 
             <tbody id="composition-table">
-            {% for composition in all_compositions %}
+            {% for composition in ungraded_compositions %}
 
             	<tr>
             		<td>Composition</td>
-            		<td>Grade</td>
-            		<td>Teachers comment</td>
+            		<td>Grade it</td>
             	</tr>
                 <tr>
                     <td><a href="/compositions/show_pdf/{{ composition.id }}" target="_blank">View</a></td>
-                    <td>{{ composition.grade }}</td>
-                    <td>{{ composition.comment }}</td>
-
+                    <td><a href="/compositions/grade_pdf/{{ composition.id }}" target="_blank">Grade it</a></td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
+    <br>
+    
+    These are all the previously graded compositions:<br>
 
+        <table id="all-composition-table">
+
+            <tbody id="composition-table">
+            {% for composition in all_compositions %}
+                {% if composition not in ungraded_compositions %}
+
+                    <tr>
+                        <td>Composition</td>
+                        <td>Grade</td>
+                        <td>Comment</td>
+                    </tr>
+                    <tr>
+                        <td><a href="/compositions/show_pdf/{{ composition.id }}" target="_blank">View</a></td>
+                        <td>{{ composition.grade }}</td>
+                        <td>{{ composition.comment }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    <br>
     <a href="/compositions/logout/">Logout</a><br />
 
 	{% endif %}

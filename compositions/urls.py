@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^grade/$', views.grade, name='grade'),
     url(r'^add_new_comp/$', views.add_new_comp, name='add_new_comp'),
     url(r'^show_pdf/(?P<composition_id>.*)$', views.show_pdf),
+    url(r'^grade_pdf/(?P<composition_id>.*)$', views.grade_pdf),
 ]

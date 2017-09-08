@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, render_to_response
 from compositions.models import UserProfile, Composition
 from django.contrib.auth.models import User
-from compositions.forms import AddCompositionForm
+from compositions.forms import AddCompositionForm, GradeCompositionForm
 from random import randint
 from shutil import copyfile
 
@@ -28,8 +28,9 @@ def grade(request):
     context = RequestContext(request)
     current_user_profile = UserProfile.objects.get(user_id=request.user)
     if current_user_profile.professor:
-        all_compositions = Composition.objects.filter(grade=0)
-        return render_to_response('compositions/grade.html', {'all_compositions': all_compositions}, context)
+        ungraded_compositions = Composition.objects.filter(grade=0)
+        all_compositions = Composition.objects.filter()
+        return render_to_response('compositions/grade.html', {'ungraded_compositions': ungraded_compositions, 'all_compositions': all_compositions}, context)
     else:
         return HttpResponse("Nein! Verboten! Only professors can access this page!")
 
@@ -89,7 +90,6 @@ def show_pdf(request, composition_id):
     pdf_path = composition.pdf_path
 
     if not current_user.is_superuser:
-        # checking if the current user is not admin and is the one whom the payroll belongs to
         if composition.user.id == current_user.id or current_user_profile.professor:
             image_data = open(pdf_path, 'rb').read()
             return HttpResponse(image_data, content_type='application/pdf')
@@ -98,6 +98,34 @@ def show_pdf(request, composition_id):
     else:
         image_data = open(path, 'rb').read()
         return HttpResponse(image_data, content_type='application/pdf')
+
+@login_required
+def grade_pdf(request, composition_id):
+    current_user = request.user
+    current_user_profile = UserProfile.objects.get(user_id=current_user.id)
+
+    if current_user_profile.professor:
+        context = RequestContext(request)
+        if request.method == 'POST':
+            form = GradeCompositionForm(request.POST, request.FILES)
+            if form.is_valid():
+                ret = change_comp(request, composition_id)
+
+        else:
+            form = GradeCompositionForm(
+                initial={'grade': 0, 'comment': ''}
+            )
+        return render_to_response('compositions/grade_comp.html', {'form': form, 'composition_id': composition_id}, context)
+    else:
+        return HttpResponse('You don\'t have the necessary permission')
+
+@login_required 
+def change_comp(request, composition_id):
+    composition = Composition.objects.get(id=composition_id)
+    composition.grade = request.POST['grade']
+    composition.comment = request.POST['comment']
+    composition.save()
+    return composition_id
 
 def user_login(request):
     # Like before, obtain the context for the user's request.

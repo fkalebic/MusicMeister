@@ -14,13 +14,17 @@
         {% for composition in all_compositions %}
 
         	<tr>
-        		<td>Wiew the compositions</td>
+        		<td>View the compositions</td>
         		<td>Grade</td>
         		<td>Teachers comment</td>
         	</tr>
             <tr>
                 <td><a href="/compositions/show_pdf/{{ composition.id }}" target="_blank">View</a></td>
-                <td>{{ composition.grade }}</td>
+                {% if composition.grade == 0 %}
+                	<td>Not graded yet</td>
+                {% else %}
+                	<td>{{ composition.grade }}</td>
+                {% endif %}
                 <td>{{ composition.comment }}</td>
 
             </tr>
