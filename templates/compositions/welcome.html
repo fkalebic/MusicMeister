@@ -11,7 +11,7 @@
     <table id="all-composition-table">
 
         <tbody id="composition-table">
-        {% for composition in all_compositions %}
+        {% for composition in my_compositions %}
 
         	<tr>
         		<td>View the compositions</td>
@@ -26,6 +26,34 @@
                 	<td>{{ composition.grade }}</td>
                 {% endif %}
                 <td>{{ composition.comment }}</td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    PUBLIC COMPOSITIONS:
+    <table id="all-composition-table">
+
+        <tbody id="composition-table">
+        {% for composition in public_compositions %}
+
+        	<tr>
+        		<td>View the compositions</td>
+        		<td>Grade</td>
+        		<td>Teachers comment</td>
+        		<td>Author<td>
+        	</tr>
+            <tr>
+                <td><a href="/compositions/show_pdf/{{ composition.id }}" target="_blank">View</a></td>
+                {% if composition.grade == 0 %}
+                	<td>Not graded yet</td>
+                {% else %}
+                	<td>{{ composition.grade }}</td>
+                {% endif %}
+                <td>{{ composition.comment }}</td>
+                <td>{{ composition.user }}</td>
 
             </tr>
         {% endfor %}

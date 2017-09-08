@@ -15,7 +15,7 @@ class UserProfile(models.Model):
         return self.user.username
 
 class Composition(models.Model):
-    graded = models.BooleanField(default=False)
+    public = models.BooleanField(default=False)
     grade = models.PositiveSmallIntegerField(default=0)
     order = models.CharField(max_length=200, default='')
     pdf_path = models.CharField(max_length=200, default='')

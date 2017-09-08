@@ -20,8 +20,9 @@ def welcome(request):
     #return HttpResponse("Hello, world. You're at the student index.")
     context = RequestContext(request)
     current_user_id = request.user.id
-    all_compositions = Composition.objects.filter(user_id=current_user_id)
-    return render_to_response('compositions/welcome.html', {'all_compositions': all_compositions}, context)
+    my_compositions = Composition.objects.filter(user_id=current_user_id)
+    public_compositions = Composition.objects.filter(public=True)
+    return render_to_response('compositions/welcome.html', {'my_compositions': my_compositions, 'public_compositions':public_compositions}, context)
 
 @login_required
 def grade(request):
@@ -55,11 +56,12 @@ def add_new_comp(request):
 @login_required
 def save_comp(request):
     order = request.POST['order']
+    public = request.POST['public']
     current_user = request.user
     #with open('files/simple.ly', "w"):
         #pass
     #os.remove('files/simple.ly')
-    f = open('files/simple.ly', "w+")
+    f = open('files/simple.ly', 'w+')
     f.write ('\\version "2.16.2"\n')
     f.write("\\relative c' {\n")
     f.write(" ".join(order))
@@ -76,7 +78,8 @@ def save_comp(request):
 
     copyfile('simple.pdf', pdf_path)
     os.remove('simple.pdf')
-    new_comp = Composition(user=current_user, order=order, pdf_path=pdf_path)
+    os.remove('files/simple.ly')
+    new_comp = Composition(user=current_user, order=order, pdf_path=pdf_path, public=public)
     new_comp.save()
     return order
 
@@ -90,7 +93,7 @@ def show_pdf(request, composition_id):
     pdf_path = composition.pdf_path
 
     if not current_user.is_superuser:
-        if composition.user.id == current_user.id or current_user_profile.professor:
+        if composition.user.id == current_user.id or current_user_profile.professor or composition.public:
             image_data = open(pdf_path, 'rb').read()
             return HttpResponse(image_data, content_type='application/pdf')
         else:
