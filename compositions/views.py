@@ -6,8 +6,13 @@ from django.shortcuts import render, render_to_response
 from compositions.models import UserProfile, Composition
 from django.contrib.auth.models import User
 from compositions.forms import AddCompositionForm
+from random import randint
+from shutil import copyfile
+
 
 from django.template import RequestContext
+import os
+
 
 
 @login_required
@@ -50,10 +55,49 @@ def add_new_comp(request):
 def save_comp(request):
     order = request.POST['order']
     current_user = request.user
-    new_comp = Composition(user=current_user, order=order)
+    #with open('files/simple.ly', "w"):
+        #pass
+    #os.remove('files/simple.ly')
+    f = open('files/simple.ly', "w+")
+    f.write ('\\version "2.16.2"\n')
+    f.write("\\relative c' {\n")
+    f.write(" ".join(order))
+    f.write('\n}')
+    f.close()
+    
+    os.system('files/script.sh')
+    
+    #python doesn't have a do while loop, so i emulate a do until - I need to do this just to make to sure that the random generated number we selected is unique
+    while True:
+        pdf_path = "files/pdf" + str(randint(100000000, 999999999))
+        if not os.path.isfile(pdf_path):
+            break
+
+    copyfile('simple.pdf', pdf_path)
+    os.remove('simple.pdf')
+    new_comp = Composition(user=current_user, order=order, pdf_path=pdf_path)
     new_comp.save()
     return order
 
+@login_required
+def show_pdf(request, composition_id):
+    current_user = request.user
+    current_user_profile = UserProfile.objects.get(user_id=current_user.id)
+
+    composition = Composition.objects.get(id=composition_id)
+
+    pdf_path = composition.pdf_path
+
+    if not current_user.is_superuser:
+        # checking if the current user is not admin and is the one whom the payroll belongs to
+        if composition.user.id == current_user.id or current_user_profile.professor:
+            image_data = open(pdf_path, 'rb').read()
+            return HttpResponse(image_data, content_type='application/pdf')
+        else:
+            return HttpResponse('You don\'t have the necessary permission')
+    else:
+        image_data = open(path, 'rb').read()
+        return HttpResponse(image_data, content_type='application/pdf')
 
 def user_login(request):
     # Like before, obtain the context for the user's request.
@@ -69,6 +113,7 @@ def user_login(request):
         # Use Django's machinery to attempt to see if the username/password
         # combination is valid - a User object is returned if it is.
         user = authenticate(username=username, password=password)
+        user_profile = UserProfile.objects.get(user_id=user.id)
 
         # If we have a User object, the details are correct.
         # If None (Python's way of representing the absence of a value), no user
@@ -80,7 +125,7 @@ def user_login(request):
                 # We'll send the user back to the homepage.
 
                 login(request, user)
-                if user.is_superuser:
+                if user_profile.professor:
                     return HttpResponseRedirect('/compositions/grade/')
                 else:
                     return HttpResponseRedirect('/compositions/welcome/')

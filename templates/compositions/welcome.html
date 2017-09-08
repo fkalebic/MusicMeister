@@ -14,12 +14,12 @@
         {% for composition in all_compositions %}
 
         	<tr>
-        		<td>Composition</td>
+        		<td>Wiew the compositions</td>
         		<td>Grade</td>
         		<td>Teachers comment</td>
         	</tr>
             <tr>
-                <td>{{ composition.order }}</td>
+                <td><a href="/compositions/show_pdf/{{ composition.id }}" target="_blank">View</a></td>
                 <td>{{ composition.grade }}</td>
                 <td>{{ composition.comment }}</td>
 
